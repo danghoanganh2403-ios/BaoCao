@@ -1,0 +1,210 @@
+# BÁO CÁO CÁ NHÂN BÀI TẬP LỚN FOURSMART
+## README_11_11 – PRODUCT & PRODUCT VARIANT
+
+Họ tên: Đặng Hoàng Anh
+GitHub: danghoanganh2403-ios  
+Nhánh: "feature/product-variant"  
+Repository: https://github.com/LaiHuy05/FourSmart-new
+
+# I. MỤC ĐÍCH BÁO CÁO
+
+Trong báo cáo này, em tập trung trình bày khả năng ứng dụng AI Agent, kỹ năng kiểm soát mã nguồn, sử dụng skill, Git log/diff và kiểm thử phần mềm thông qua việc phân tích dự án FourSmart.
+
+Em lựa chọn các nghiệp vụ sản phẩm và biến thể sản phẩm làm ví dụ, nhằm chứng minh khả năng hiểu, phân tích và chỉnh sửa mã nguồn chứ không chỉ giới thiệu chức năng đã xây dựng.
+
+# II. Ý 1 – SỬ DỤNG AI AGENT XÂY DỰNG HỆ THỐNG 
+
+## 2.1. Nhận thức về AI Agent
+
+Theo em, AI Agent là công cụ hỗ trợ lập trình có khả năng tiếp nhận yêu cầu, phân tích ngữ cảnh, đọc mã nguồn và đề xuất các bước chỉnh sửa.
+
+Khi phát triển ứng dụng PHP MVC, Agent có thể hỗ trợ tìm kiếm các class, phương thức, truy vấn SQL và xác định mối liên hệ giữa các thành phần.
+
+Tuy nhiên, AI có thể tạo ra mã nguồn không phù hợp với cấu trúc dữ liệu. Vì vậy, em cần kiểm tra và hiểu rõ mã nguồn trước khi áp dụng.
+
+## 2.2. Quy trình sử dụng AI Agent
+
+Em xác định quy trình gồm:
+
+1. Phân tích bài toán và yêu cầu nghiệp vụ.
+2. Cung cấp cấu trúc MVC và các file liên quan.
+3. Yêu cầu AI tìm vị trí xử lý và đề xuất giải pháp.
+4. Kiểm tra code, câu truy vấn SQL và điều kiện đầu vào.
+5. Chạy thử những trường hợp hợp lệ và không hợp lệ.
+6. Sử dụng Git diff để kiểm tra trước khi commit.
+
+## 2.3. Tình huống áp dụng thực tế
+
+Trong FourSmart, thông tin biến thể sản phẩm được xử lý tại:
+
+mvc/model/ProductVariantModel.php
+
+Class ProductVariantModel có các phương thức:
+
+- colorsByProduct(): Lấy màu theo sản phẩm.
+- findColor(): Tìm màu theo ID.
+- createColor(): Thêm màu.
+- updateColor(): Cập nhật màu.
+- deleteColor(): Xóa màu.
+- memoriesByProduct(): Lấy các lựa chọn bộ nhớ.
+- createMemory(), updateMemory(), deleteMemory(): Thao tác dữ liệu bộ nhớ.
+
+Ví dụ, nếu muốn ngăn việc thêm một màu trùng lặp cho cùng sản phẩm, em có thể yêu cầu AI:
+
+> Hãy phân tích ProductVariantModel.php của dự án FourSmart. Tìm phương thức tạo màu và đề xuất cách ngăn hai màu cùng tên thuộc cùng sản phẩm. Giữ nguyên kiến trúc MVC và cấu trúc dữ liệu hiện tại. Giải thích những file cần sửa, các trường hợp kiểm thử và tác động đến code cũ.
+Sau khi AI đề xuất giải pháp, em cần kiểm tra cách so sánh tên màu, xử lý khoảng trắng, chữ hoa/chữ thường và điều kiện trùng lặp theo ID sản phẩm.
+
+Em cũng cần cân nhắc ràng buộc UNIQUE trong cơ sở dữ liệu để giảm nguy cơ tạo dữ liệu trùng khi nhiều yêu cầu được xử lý đồng thời.
+
+Ví dụ này giúp em hiểu cách sử dụng AI có kiểm soát: không chỉ yêu cầu code mà còn kiểm tra sự phù hợp với nghiệp vụ.
+
+# III. Ý 2 – KỸ NĂNG KIỂM SOÁT CODE 
+
+## 3.1. Ý 2a – Khả năng hiểu và chỉnh sửa chức năng
+
+### 3.1.1. Cấu trúc mã nguồn
+
+Các file quan trọng:
+
+- mvc/model/ProductModel.php
+- mvc/model/ProductVariantModel.php
+- mvc/controller/admin/product_controller.php
+- mvc/controller/client/product_controller.php
+- mvc/view/admin/product/add.php
+- mvc/view/admin/product/update.php
+
+Trong mô hình MVC, Controller kiểm tra yêu cầu, Model thao tác dữ liệu và View hiển thị kết quả.
+
+### 3.1.2. Phân tích nghiệp vụ tồn kho
+
+Trong AdminProductController, khi thêm hoặc sửa sản phẩm, chương trình kiểm tra các điều kiện như:
+
+- Tên sản phẩm không được rỗng.
+- Giá sản phẩm phải lớn hơn 0.
+- Số lượng không được âm.
+- Mô tả không được rỗng.
+- Danh mục phải có ID hợp lệ.
+
+Ngoài ra, Controller còn kiểm tra CSRF token khi xử lý biểu mẫu.
+
+Khi thực hiện xóa sản phẩm, chương trình gọi ProductModel::hasRelatedData(): để kiểm tra dữ liệu liên quan.
+
+Nếu sản phẩm đang liên quan đến giỏ hàng, đơn hàng hoặc bình luận, thao tác xóa bị từ chối với HTTP 409.
+
+Em hiểu rằng việc này giúp bảo vệ dữ liệu và hạn chế các lỗi liên quan đến quan hệ giữa bảng sản phẩm và các bảng khác.
+
+### 3.1.3. Ví dụ sửa code khi giảng viên yêu cầu
+
+Nếu thầy yêu cầu không cho nhập giá sản phẩm dưới 100.000 đồng, em xác định vị trí sửa tại phương thức `add()` và `update()` của AdminProductController.
+
+Điều kiện kiểm tra có thể bổ sung:
+
+```php
+if ($price < 100000) {
+    $error = 'Giá sản phẩm phải từ 100.000 đồng';
+}
+```
+
+Em cần bảo đảm điều kiện được kiểm tra trên server, đồng thời cân nhắc các chức năng khác có khả năng tạo hoặc thay đổi giá sản phẩm.
+
+Sau khi sửa, em sẽ kiểm tra ba giá trị: 99.999 đồng, 100.000 đồng và 100.001 đồng.
+
+Đây là ví dụ chỉnh sửa minh họa, chưa phải thay đổi đã commit.
+
+## 3.2. Ý 2b – Kỹ năng sử dụng skill
+
+Theo em, skill là bộ quy trình hướng dẫn Agent giải quyết một dạng nhiệm vụ một cách có hệ thống.
+Với module sản phẩm, em có thể sử dụng skill phân tích dependency hoặc Graphify để biểu diễn mối quan hệ:
+
+AdminProductController → ProductModel → Database
+
+và:
+
+ClientProductController → ProductModel / ProductVariantModel → Database
+
+Em có thể dùng kết quả phân tích để xác định những vị trí cần kiểm tra nếu thay đổi cấu trúc sản phẩm hoặc biến thể.
+
+Ví dụ, nếu thay đổi cách lưu màu hoặc bộ nhớ, em cần xem xét ảnh hưởng tới trang chi tiết sản phẩm, giỏ hàng và dữ liệu đơn hàng.
+
+Việc sử dụng skill có ý nghĩa khi kết quả được đối chiếu với code thực tế, không chỉ dựa vào sơ đồ do AI tạo ra.
+
+**Minh chứng cần bổ sung:** Tên skill đã thực hành, prompt hoặc lệnh gọi, kết quả phân tích và nhận xét của em.
+
+## 3.3. Ý 2c – Git log, Git diff và đánh giá hiệu quả
+
+Để xem lịch sử nhánh:
+
+```bash
+git log feature/product-variant --oneline
+```
+
+Để xem lịch sử của riêng Model:
+
+```bash
+git log --oneline feature/product-variant -- mvc/model/ProductVariantModel.php
+```
+
+Để kiểm tra một commit:
+
+```bash
+git show 268608b65
+```
+
+Commit `268608b65` có nội dung bổ sung kiểm tra tồn kho và bảo vệ thao tác xóa sản phẩm.
+
+Để xem thay đổi giữa các phiên bản:
+
+```bash
+git diff HEAD~1 HEAD
+```
+
+Qua Git log, em có thể xác định tiến trình thực hiện. Qua Git diff, em xác định cụ thể những đoạn mã được sửa và xem liệu thay đổi có giải quyết đúng vấn đề hay không.
+
+Với vai trò đánh giá chất lượng, em cho rằng hiệu quả làm việc cần dựa trên:
+
+- Mức độ đáp ứng nghiệp vụ.
+- Chất lượng mã nguồn và khả năng bảo trì.
+- Khả năng giải thích, sửa đổi code.
+- Kiểm thử và xử lý lỗi.
+- Lịch sử commit rõ ràng và khả năng phối hợp.
+
+Số lượng commit chỉ là một nguồn thông tin, không phải thước đo duy nhất.
+
+# IV. Ý 3 – KẾT HỢP CÔNG CỤ KIỂM THỬ 
+
+## 4.1. Những công cụ có thể sử dụng
+
+Em có thể kết hợp PHP CLI để kiểm tra cú pháp, PHPUnit để tạo kiểm thử tự động, công cụ HTTP để kiểm tra request/response và DevTools để kiểm tra quá trình tương tác trên giao diện.
+
+Git diff giúp xác định phạm vi thay đổi để thực hiện kiểm thử hồi quy.
+
+## 4.2. Các trường hợp kiểm thử đề xuất
+
+| Mã | Trường hợp | Kết quả mong đợi |
+|---|---|---|
+| P01 | Thêm sản phẩm thiếu tên | Từ chối |
+| P02 | Giá sản phẩm bằng 0 | Từ chối |
+| P03 | Số lượng âm | Từ chối |
+| P04 | Xóa sản phẩm có dữ liệu liên quan | HTTP 409 |
+| P05 | Thêm màu thuộc sản phẩm hợp lệ | Lưu dữ liệu |
+| P06 | Truy vấn màu theo ID sản phẩm | Chỉ lấy màu tương ứng |
+| P07 | Thêm màu trùng (sau khi bổ sung ràng buộc) | Từ chối |
+| P08 | Sản phẩm không đủ tồn kho khi mua | Không cho mua quá tồn kho |
+
+Em cần chạy thực tế từng trường hợp, ghi nhận kết quả và chụp minh chứng.
+
+## 4.3. Tình trạng kiểm thử
+
+File mvc/tests/product_variant_model_test.php hiện thực hiện truy vấn danh sách màu và bộ nhớ rồi in dữ liệu.
+
+Đây là một bước kiểm tra thủ công, chưa phải kiểm thử tự động có assertion.
+
+Để hoàn thiện, em cần bổ sung kiểm thử có kết quả pass/fail rõ ràng, đặc biệt cho những điều kiện giá, tồn kho và dữ liệu biến thể.
+
+# V. KẾT LUẬN
+
+Qua việc tìm hiểu module sản phẩm trong FourSmart, em nhận thức được rằng khả năng lập trình không chỉ thể hiện ở việc tạo ra chức năng mà còn nằm ở năng lực hiểu, sửa, kiểm tra và bảo vệ dữ liệu.
+
+Em cần kết hợp AI Agent với việc kiểm soát code, sử dụng skill phân tích hệ thống và những công cụ kiểm thử nhằm nâng cao tính chính xác.
+
+Việc sử dụng Git log và Git diff giúp em theo dõi quá trình thay đổi mã nguồn, đánh giá chất lượng công việc dựa trên bằng chứng thay vì chỉ xem kết quả cuối cùng.
